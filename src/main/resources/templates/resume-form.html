@@ -941,14 +941,35 @@
         async function enhanceWithAI() {
             const data = gatherFormData();
             
-            if (!resumeId) {
-                alert('Please fill in your basic information first.');
+            // Validate required fields
+            if (!data.firstName || !data.lastName || !data.email || !data.phone) {
+                alert('Please fill in all required personal information (First Name, Last Name, Email, Phone).');
                 return;
             }
 
-            showLoading(true);
+            showLoading(true, '🤖 Enhancing your resume with AI...');
 
             try {
+                // Step 1: Create/Submit the resume first if not already created
+                if (!resumeId) {
+                    const submitResponse = await fetch('/api/resume/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    const submitResult = await submitResponse.json();
+                    
+                    if (!submitResult.success) {
+                        alert('Error creating resume: ' + submitResult.error);
+                        showLoading(false);
+                        return;
+                    }
+                    
+                    resumeId = submitResult.data.id;
+                }
+
+                // Step 2: Enhance with AI
                 const enhancementData = {
                     careerObjective: data.careerObjective,
                     professionalSummary: data.professionalSummary,
@@ -957,18 +978,24 @@
                     achievementsDescription: data.achievements.map(a => `${a.achievementTitle}: ${a.description}`).join('; ')
                 };
 
-                const response = await fetch(`/api/resume/${resumeId}/enhance`, {
+                const enhanceResponse = await fetch(`/api/resume/${resumeId}/enhance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(enhancementData)
                 });
 
-                const result = await response.json();
+                const enhanceResult = await enhanceResponse.json();
                 
-                if (result.success) {
-                    showSuccess('Resume enhanced with AI! Click "Generate Resume" to download the improved version.');
+                if (enhanceResult.success) {
+                    // Step 3: Automatically download the enhanced PDF
+                    showSuccess('✨ Resume enhanced with AI! Downloading your improved resume...');
+                    
+                    // Wait a moment for the success message to show
+                    setTimeout(() => {
+                        window.location.href = `/api/resume/${resumeId}/pdf`;
+                    }, 1000);
                 } else {
-                    alert('Error: ' + result.error);
+                    alert('Error enhancing resume: ' + enhanceResult.error);
                 }
             } catch (error) {
                 alert('Error: ' + error.message);
@@ -989,8 +1016,12 @@
         }
 
         // Show Loading
-        function showLoading(show) {
-            document.getElementById('loading').classList.toggle('active', show);
+        function showLoading(show, message = '⏳ Processing...') {
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.classList.toggle('active', show);
+            if (show) {
+                loadingDiv.querySelector('span').textContent = message;
+            }
         }
 
         // Show Success Message

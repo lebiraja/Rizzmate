@@ -331,9 +331,8 @@ public class PdfService {
      */
     private String getModernStyles() {
         return """
-            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
             body {
-                font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 line-height: 1.7;
                 color: #2c3e50;
                 margin: 25px 35px;
