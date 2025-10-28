@@ -4,6 +4,11 @@ import com.airesumebuilder.dto.ApiResponse;
 import com.airesumebuilder.dto.EnhancementRequestDTO;
 import com.airesumebuilder.dto.ResumeDTO;
 import com.airesumebuilder.service.ResumeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +32,8 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/resume")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:8080", "http://localhost:3000"}, maxAge = 3600)
+@Tag(name = "Resume Management", description = "APIs for resume creation, enhancement, and management")
 public class ResumeController {
 
     private static final Logger log = LoggerFactory.getLogger(ResumeController.class);
@@ -40,7 +46,18 @@ public class ResumeController {
      * Create and save a new resume
      */
     @PostMapping("/submit")
-    public ResponseEntity<ApiResponse<ResumeDTO>> submitResume(@RequestBody ResumeDTO resumeDTO) {
+    @Operation(
+        summary = "Create new resume",
+        description = "Accepts validated resume data and saves to database"
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resume created successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid resume data"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<ApiResponse<ResumeDTO>> submitResume(
+            @Parameter(description = "Resume data to create", required = true)
+            @Valid @RequestBody ResumeDTO resumeDTO) {
         try {
             log.info("Submitting new resume for: {}", resumeDTO.getEmail());
             ResumeDTO savedResume = resumeService.createResume(resumeDTO);
@@ -59,7 +76,17 @@ public class ResumeController {
      * Retrieve resume by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ResumeDTO>> getResume(@PathVariable Long id) {
+    @Operation(
+        summary = "Get resume by ID",
+        description = "Retrieves a resume with all details including educations, projects, skills, etc."
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resume found"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Resume not found")
+    })
+    public ResponseEntity<ApiResponse<ResumeDTO>> getResume(
+            @Parameter(description = "Resume ID", required = true)
+            @PathVariable Long id) {
         try {
             log.info("Retrieving resume with ID: {}", id);
             ResumeDTO resume = resumeService.getResumeById(id);
@@ -78,9 +105,20 @@ public class ResumeController {
      * Update an existing resume
      */
     @PutMapping("/{id}")
+    @Operation(
+        summary = "Update resume",
+        description = "Updates an existing resume with new data"
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resume updated successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Resume not found"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid resume data")
+    })
     public ResponseEntity<ApiResponse<ResumeDTO>> updateResume(
+            @Parameter(description = "Resume ID", required = true)
             @PathVariable Long id,
-            @RequestBody ResumeDTO resumeDTO) {
+            @Parameter(description = "Updated resume data", required = true)
+            @Valid @RequestBody ResumeDTO resumeDTO) {
         try {
             log.info("Updating resume with ID: {}", id);
             ResumeDTO updatedResume = resumeService.updateResume(id, resumeDTO);
@@ -99,8 +137,20 @@ public class ResumeController {
      * Enhance resume using Gemini AI
      */
     @PostMapping("/{id}/enhance")
+    @Operation(
+        summary = "Enhance resume with AI",
+        description = "Uses Google Gemini AI to improve resume content with better wording and professional language. Rate limited to 10 requests per minute."
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resume enhanced successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Resume not found"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "429", description = "Rate limit exceeded - max 10 requests per minute"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "503", description = "AI service unavailable")
+    })
     public ResponseEntity<ApiResponse<ResumeDTO>> enhanceResume(
+            @Parameter(description = "Resume ID", required = true)
             @PathVariable Long id,
+            @Parameter(description = "Content to enhance", required = true)
             @RequestBody EnhancementRequestDTO request) {
         try {
             log.info("Enhancing resume with ID: {}", id);
@@ -120,8 +170,20 @@ public class ResumeController {
      * Calculate resume score using Gemini AI
      */
     @PostMapping("/{id}/score")
+    @Operation(
+        summary = "Calculate resume score",
+        description = "Analyzes resume and provides a score out of 100 based on content quality, presentation, skills, projects, and marketability. Rate limited to 10 requests per minute."
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Score calculated successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Resume not found"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "429", description = "Rate limit exceeded"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "503", description = "AI service unavailable")
+    })
     public ResponseEntity<ApiResponse<ResumeDTO>> calculateScore(
+            @Parameter(description = "Resume ID", required = true)
             @PathVariable Long id,
+            @Parameter(description = "Resume content to score", required = true)
             @RequestBody EnhancementRequestDTO request) {
         try {
             log.info("Calculating score for resume with ID: {}", id);
@@ -141,7 +203,18 @@ public class ResumeController {
      * Generate and download resume as PDF
      */
     @GetMapping("/{id}/pdf")
-    public ResponseEntity<byte[]> downloadPdf(@PathVariable Long id) {
+    @Operation(
+        summary = "Download resume as PDF",
+        description = "Generates a professionally formatted PDF document of the resume"
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "PDF generated successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Resume not found"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "PDF generation failed")
+    })
+    public ResponseEntity<byte[]> downloadPdf(
+            @Parameter(description = "Resume ID", required = true)
+            @PathVariable Long id) {
         try {
             log.info("Generating PDF for resume with ID: {}", id);
             byte[] pdfBytes = resumeService.generateResumePdf(id);
@@ -161,7 +234,17 @@ public class ResumeController {
      * Delete a resume
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteResume(@PathVariable Long id) {
+    @Operation(
+        summary = "Delete resume",
+        description = "Permanently deletes a resume and all associated data"
+    )
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resume deleted successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Resume not found")
+    })
+    public ResponseEntity<ApiResponse<String>> deleteResume(
+            @Parameter(description = "Resume ID", required = true)
+            @PathVariable Long id) {
         try {
             log.info("Deleting resume with ID: {}", id);
             resumeService.deleteResume(id);

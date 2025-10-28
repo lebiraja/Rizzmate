@@ -1,6 +1,8 @@
 package com.airesumebuilder.dto;
 
 import com.airesumebuilder.model.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import java.util.List;
 
 /**
@@ -10,13 +12,32 @@ import java.util.List;
 public class ResumeDTO {
 
     private Long id;
+    
+    @NotBlank(message = "First name is required")
+    @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
     private String firstName;
+    
+    @NotBlank(message = "Last name is required")
+    @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
     private String lastName;
+    
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
+    
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits")
     private String phone;
+    
+    @Size(max = 100, message = "Location must not exceed 100 characters")
     private String location;
+    
+    @Size(max = 1000, message = "Career objective must not exceed 1000 characters")
     private String careerObjective;
+    
+    @Size(max = 2000, message = "Professional summary must not exceed 2000 characters")
     private String professionalSummary;
+    
     private String enhancedCareerObjective;
     private String enhancedProfessionalSummary;
     private String enhancedData;
@@ -24,11 +45,22 @@ public class ResumeDTO {
     private String resumeScoreFeedback;
     private String template;
 
+    @Valid
     private List<Education> educations;
+    
+    @Valid
     private List<Project> projects;
+    
+    @Valid
     private List<Skill> skills;
+    
+    @Valid
     private List<Certification> certifications;
+    
+    @Valid
     private List<Language> languages;
+    
+    @Valid
     private List<Achievement> achievements;
 
     // Constructors

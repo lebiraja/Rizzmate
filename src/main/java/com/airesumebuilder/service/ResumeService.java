@@ -2,13 +2,20 @@ package com.airesumebuilder.service;
 
 import com.airesumebuilder.dto.EnhancementRequestDTO;
 import com.airesumebuilder.dto.ResumeDTO;
+import com.airesumebuilder.exception.InvalidResumeDataException;
+import com.airesumebuilder.exception.ResumeNotFoundException;
 import com.airesumebuilder.model.ResumeData;
 import com.airesumebuilder.repository.ResumeRepository;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,66 +49,66 @@ public class ResumeService {
      * Create a new resume
      */
     @Transactional
+    @CachePut(value = "resumes", key = "#result.id", unless = "#result == null")
     public ResumeDTO createResume(ResumeDTO resumeDTO) {
         try {
+            if (resumeDTO == null) {
+                throw new InvalidResumeDataException("Resume data cannot be null");
+            }
+            
             ResumeData resume = resumeDTO.toEntity();
             ResumeData savedResume = resumeRepository.save(resume);
             log.info("Resume created with ID: {}", savedResume.getId());
             return ResumeDTO.fromEntity(savedResume);
+        } catch (DataAccessException e) {
+            log.error("Database error creating resume: {}", e.getMessage(), e);
+            throw new InvalidResumeDataException("Failed to save resume to database", e);
         } catch (Exception e) {
             log.error("Error creating resume: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to create resume: " + e.getMessage());
+            throw new InvalidResumeDataException("Failed to create resume: " + e.getMessage(), e);
         }
     }
 
     /**
      * Get resume by ID
      */
+    @Cacheable(value = "resumes", key = "#id")
     public ResumeDTO getResumeById(Long id) {
-        try {
-            return resumeRepository.findById(id)
-                    .map(ResumeDTO::fromEntity)
-                    .orElseThrow(() -> new RuntimeException("Resume not found with ID: " + id));
-        } catch (Exception e) {
-            log.error("Error retrieving resume: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to retrieve resume: " + e.getMessage());
-        }
+        return resumeRepository.findByIdWithDetails(id)
+                .map(ResumeDTO::fromEntity)
+                .orElseThrow(() -> new ResumeNotFoundException(id));
     }
 
     /**
      * Update resume
      */
     @Transactional
+    @CacheEvict(value = "resumes", key = "#id")
     public ResumeDTO updateResume(Long id, ResumeDTO resumeDTO) {
-        try {
-            ResumeData resume = resumeRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Resume not found with ID: " + id));
+        ResumeData resume = resumeRepository.findById(id)
+                .orElseThrow(() -> new ResumeNotFoundException(id));
 
-            // Update basic fields
-            if (resumeDTO.getFirstName() != null) resume.setFirstName(resumeDTO.getFirstName());
-            if (resumeDTO.getLastName() != null) resume.setLastName(resumeDTO.getLastName());
-            if (resumeDTO.getEmail() != null) resume.setEmail(resumeDTO.getEmail());
-            if (resumeDTO.getPhone() != null) resume.setPhone(resumeDTO.getPhone());
-            if (resumeDTO.getLocation() != null) resume.setLocation(resumeDTO.getLocation());
-            if (resumeDTO.getCareerObjective() != null) resume.setCareerObjective(resumeDTO.getCareerObjective());
-            if (resumeDTO.getProfessionalSummary() != null) resume.setProfessionalSummary(resumeDTO.getProfessionalSummary());
-            if (resumeDTO.getTemplate() != null) resume.setTemplate(resumeDTO.getTemplate());
+        // Update basic fields
+        if (resumeDTO.getFirstName() != null) resume.setFirstName(resumeDTO.getFirstName());
+        if (resumeDTO.getLastName() != null) resume.setLastName(resumeDTO.getLastName());
+        if (resumeDTO.getEmail() != null) resume.setEmail(resumeDTO.getEmail());
+        if (resumeDTO.getPhone() != null) resume.setPhone(resumeDTO.getPhone());
+        if (resumeDTO.getLocation() != null) resume.setLocation(resumeDTO.getLocation());
+        if (resumeDTO.getCareerObjective() != null) resume.setCareerObjective(resumeDTO.getCareerObjective());
+        if (resumeDTO.getProfessionalSummary() != null) resume.setProfessionalSummary(resumeDTO.getProfessionalSummary());
+        if (resumeDTO.getTemplate() != null) resume.setTemplate(resumeDTO.getTemplate());
 
-            // Update relationships
-            if (resumeDTO.getEducations() != null) resume.setEducations(resumeDTO.getEducations());
-            if (resumeDTO.getProjects() != null) resume.setProjects(resumeDTO.getProjects());
-            if (resumeDTO.getSkills() != null) resume.setSkills(resumeDTO.getSkills());
-            if (resumeDTO.getCertifications() != null) resume.setCertifications(resumeDTO.getCertifications());
-            if (resumeDTO.getLanguages() != null) resume.setLanguages(resumeDTO.getLanguages());
-            if (resumeDTO.getAchievements() != null) resume.setAchievements(resumeDTO.getAchievements());
+        // Update relationships
+        if (resumeDTO.getEducations() != null) resume.setEducations(resumeDTO.getEducations());
+        if (resumeDTO.getProjects() != null) resume.setProjects(resumeDTO.getProjects());
+        if (resumeDTO.getSkills() != null) resume.setSkills(resumeDTO.getSkills());
+        if (resumeDTO.getCertifications() != null) resume.setCertifications(resumeDTO.getCertifications());
+        if (resumeDTO.getLanguages() != null) resume.setLanguages(resumeDTO.getLanguages());
+        if (resumeDTO.getAchievements() != null) resume.setAchievements(resumeDTO.getAchievements());
 
-            ResumeData updatedResume = resumeRepository.save(resume);
-            log.info("Resume updated with ID: {}", id);
-            return ResumeDTO.fromEntity(updatedResume);
-        } catch (Exception e) {
-            log.error("Error updating resume: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to update resume: " + e.getMessage());
-        }
+        ResumeData updatedResume = resumeRepository.save(resume);
+        log.info("Resume updated with ID: {}", id);
+        return ResumeDTO.fromEntity(updatedResume);
     }
 
     /**

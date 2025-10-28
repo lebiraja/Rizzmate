@@ -75,19 +75,25 @@ public class PdfService {
             html.append("</p>");
             html.append("</div>");
 
-            // Career Objective
-            if (resume.getEnhancedCareerObjective() != null && !resume.getEnhancedCareerObjective().isEmpty()) {
+            // Career Objective - prefer enhanced version, fallback to original
+            String careerObj = resume.getEnhancedCareerObjective() != null && !resume.getEnhancedCareerObjective().isEmpty()
+                ? resume.getEnhancedCareerObjective()
+                : resume.getCareerObjective();
+            if (careerObj != null && !careerObj.isEmpty()) {
                 html.append("<div class='section'>");
                 html.append("<h2>Career Objective</h2>");
-                html.append("<p>").append(resume.getEnhancedCareerObjective()).append("</p>");
+                html.append("<p>").append(careerObj).append("</p>");
                 html.append("</div>");
             }
 
-            // Professional Summary
-            if (resume.getEnhancedProfessionalSummary() != null && !resume.getEnhancedProfessionalSummary().isEmpty()) {
+            // Professional Summary - prefer enhanced version, fallback to original
+            String profSummary = resume.getEnhancedProfessionalSummary() != null && !resume.getEnhancedProfessionalSummary().isEmpty()
+                ? resume.getEnhancedProfessionalSummary()
+                : resume.getProfessionalSummary();
+            if (profSummary != null && !profSummary.isEmpty()) {
                 html.append("<div class='section'>");
                 html.append("<h2>Professional Summary</h2>");
-                html.append("<p>").append(resume.getEnhancedProfessionalSummary()).append("</p>");
+                html.append("<p>").append(profSummary).append("</p>");
                 html.append("</div>");
             }
 
@@ -220,53 +226,309 @@ public class PdfService {
     }
 
     /**
-     * Classic resume template styles
+     * Classic resume template styles - Professional and ATS-friendly
      */
     private String getClassicStyles() {
-        return "body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; } " +
-               ".header { border-bottom: 2px solid #0066cc; margin-bottom: 20px; padding-bottom: 10px; } " +
-               ".header h1 { margin: 0; color: #0066cc; font-size: 28px; } " +
-               ".contact-info { margin: 5px 0 0 0; font-size: 12px; color: #666; } " +
-               ".section { margin: 20px 0; } " +
-               ".section h2 { border-left: 4px solid #0066cc; padding-left: 10px; font-size: 16px; margin: 10px 0 5px 0; } " +
-               ".item { margin: 10px 0; } " +
-               ".item strong { color: #0066cc; } " +
-               ".skills-grid { display: flex; flex-wrap: wrap; gap: 8px; } " +
-               ".skill-badge { background: #f0f0f0; padding: 5px 10px; border-radius: 3px; font-size: 12px; } " +
-               "ul { margin: 5px 0; padding-left: 20px; }";
+        return """
+            @page {
+                margin: 20mm;
+            }
+            body {
+                font-family: 'Calibri', 'Arial', 'Helvetica', sans-serif;
+                line-height: 1.6;
+                color: #2b2b2b;
+                margin: 0;
+                padding: 0;
+                font-size: 11pt;
+            }
+            .header {
+                border-bottom: 3px solid #1a5490;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
+                text-align: center;
+            }
+            .header h1 {
+                margin: 0 0 10px 0;
+                color: #1a5490;
+                font-size: 28pt;
+                font-weight: 700;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+            }
+            .contact-info {
+                margin: 8px 0 0 0;
+                font-size: 10.5pt;
+                color: #555;
+                line-height: 1.4;
+            }
+            .section {
+                margin: 20px 0;
+                page-break-inside: avoid;
+            }
+            .section h2 {
+                color: #1a5490;
+                font-size: 14pt;
+                font-weight: 700;
+                margin: 15px 0 10px 0;
+                padding-bottom: 5px;
+                border-bottom: 2px solid #1a5490;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .item {
+                margin: 12px 0 12px 0;
+                line-height: 1.6;
+            }
+            .item strong {
+                color: #2b2b2b;
+                font-size: 11.5pt;
+                display: block;
+                margin-bottom: 3px;
+                font-weight: 600;
+            }
+            .skills-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 10px;
+            }
+            .skill-badge {
+                background: #f8f9fa;
+                border: 1.5px solid #1a5490;
+                color: #1a5490;
+                padding: 5px 12px;
+                border-radius: 3px;
+                font-size: 10pt;
+                font-weight: 600;
+                display: inline-block;
+            }
+            ul {
+                margin: 8px 0;
+                padding-left: 20px;
+                line-height: 1.7;
+            }
+            ul li {
+                margin: 4px 0;
+            }
+            p {
+                margin: 8px 0;
+                text-align: justify;
+                line-height: 1.6;
+            }
+            em {
+                color: #666;
+                font-size: 10pt;
+                font-style: italic;
+            }
+            br {
+                line-height: 1.4;
+            }
+            """;
     }
 
     /**
-     * Modern resume template styles
+     * Modern resume template styles - Clean and contemporary
      */
     private String getModernStyles() {
-        return "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.7; color: #2c3e50; margin: 20px; } " +
-               ".header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; } " +
-               ".header h1 { margin: 0; font-size: 32px; font-weight: 600; } " +
-               ".contact-info { margin: 10px 0 0 0; font-size: 13px; opacity: 0.9; } " +
-               ".section { margin: 25px 0; } " +
-               ".section h2 { color: #667eea; font-size: 18px; margin: 15px 0 10px 0; font-weight: 600; border-bottom: 2px solid #667eea; padding-bottom: 5px; } " +
-               ".item { margin: 12px 0; padding-left: 10px; } " +
-               ".item strong { color: #2c3e50; font-size: 14px; } " +
-               ".skills-grid { display: flex; flex-wrap: wrap; gap: 10px; } " +
-               ".skill-badge { background: #f8f9fa; border: 1px solid #667eea; color: #667eea; padding: 8px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; } " +
-               "ul { margin: 5px 0; padding-left: 20px; }";
+        return """
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+            body {
+                font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.7;
+                color: #2c3e50;
+                margin: 25px 35px;
+                font-size: 11pt;
+            }
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 30px;
+                border-radius: 10px;
+                margin-bottom: 35px;
+                text-align: center;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header h1 {
+                margin: 0;
+                font-size: 36px;
+                font-weight: 700;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+            }
+            .contact-info {
+                margin: 12px 0 0 0;
+                font-size: 12pt;
+                opacity: 0.95;
+                font-weight: 300;
+            }
+            .section {
+                margin: 28px 0;
+                page-break-inside: avoid;
+            }
+            .section h2 {
+                color: #667eea;
+                font-size: 18pt;
+                margin: 18px 0 12px 0;
+                font-weight: 700;
+                border-bottom: 3px solid #667eea;
+                padding-bottom: 8px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .item {
+                margin: 16px 0 16px 15px;
+                padding-left: 12px;
+                border-left: 3px solid #e8eaf6;
+                line-height: 1.8;
+            }
+            .item strong {
+                color: #2c3e50;
+                font-size: 13pt;
+                display: block;
+                margin-bottom: 5px;
+                font-weight: 600;
+            }
+            .skills-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-top: 12px;
+            }
+            .skill-badge {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 25px;
+                font-size: 10pt;
+                font-weight: 500;
+                display: inline-block;
+                box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+            }
+            ul {
+                margin: 10px 0;
+                padding-left: 25px;
+                line-height: 1.9;
+            }
+            ul li {
+                margin: 6px 0;
+            }
+            p {
+                margin: 10px 0;
+                text-align: justify;
+            }
+            em {
+                color: #7f8c8d;
+                font-size: 10pt;
+                font-weight: 300;
+            }
+            """;
     }
 
     /**
-     * Creative resume template styles
+     * Creative resume template styles - Bold and distinctive
      */
     private String getCreativeStyles() {
-        return "body { font-family: 'Trebuchet MS', sans-serif; line-height: 1.8; color: #34495e; margin: 20px; } " +
-               ".header { background: #f39c12; color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); } " +
-               ".header h1 { margin: 0; font-size: 36px; font-weight: 700; text-transform: uppercase; } " +
-               ".contact-info { margin: 12px 0 0 0; font-size: 14px; opacity: 0.95; } " +
-               ".section { margin: 25px 0; background: #ecf0f1; padding: 15px; border-radius: 8px; } " +
-               ".section h2 { color: #f39c12; font-size: 20px; margin: 0 0 15px 0; font-weight: 700; text-transform: uppercase; } " +
-               ".item { margin: 12px 0; } " +
-               ".item strong { color: #e74c3c; } " +
-               ".skills-grid { display: flex; flex-wrap: wrap; gap: 10px; } " +
-               ".skill-badge { background: #f39c12; color: white; padding: 8px 14px; border-radius: 25px; font-size: 12px; font-weight: 600; } " +
-               "ul { margin: 5px 0; padding-left: 20px; }";
+        return """
+            body {
+                font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.8;
+                color: #34495e;
+                margin: 25px 35px;
+                font-size: 11pt;
+                background: #fafafa;
+            }
+            .header {
+                background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+                color: white;
+                padding: 35px;
+                border-radius: 15px;
+                margin-bottom: 35px;
+                box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
+                text-align: center;
+            }
+            .header h1 {
+                margin: 0;
+                font-size: 38px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .contact-info {
+                margin: 14px 0 0 0;
+                font-size: 12pt;
+                opacity: 0.95;
+                font-weight: 400;
+            }
+            .section {
+                margin: 28px 0;
+                background: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                page-break-inside: avoid;
+            }
+            .section h2 {
+                color: #f39c12;
+                font-size: 20pt;
+                margin: 0 0 18px 0;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                border-bottom: 4px solid #f39c12;
+                padding-bottom: 8px;
+            }
+            .item {
+                margin: 16px 0;
+                padding: 12px;
+                background: #f8f9fa;
+                border-radius: 8px;
+                border-left: 4px solid #f39c12;
+                line-height: 1.8;
+            }
+            .item strong {
+                color: #e74c3c;
+                font-size: 13pt;
+                display: block;
+                margin-bottom: 5px;
+                font-weight: 700;
+            }
+            .skills-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-top: 12px;
+            }
+            .skill-badge {
+                background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+                color: white;
+                padding: 9px 16px;
+                border-radius: 25px;
+                font-size: 10pt;
+                font-weight: 600;
+                display: inline-block;
+                box-shadow: 0 3px 6px rgba(243, 156, 18, 0.4);
+                text-transform: uppercase;
+            }
+            ul {
+                margin: 10px 0;
+                padding-left: 25px;
+                line-height: 1.9;
+            }
+            ul li {
+                margin: 7px 0;
+                color: #2c3e50;
+            }
+            p {
+                margin: 10px 0;
+                text-align: justify;
+                color: #34495e;
+            }
+            em {
+                color: #95a5a6;
+                font-size: 10pt;
+                font-style: italic;
+            }
+            """;
     }
 }
