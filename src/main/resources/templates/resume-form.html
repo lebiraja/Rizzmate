@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Your Resume - AI Resume Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .form-section h3 {
+            font-size: 1.5rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-section h3::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: #667eea;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="phone"],
+        input[type="number"],
+        textarea,
+        select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="phone"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+            font-size: 0.9rem;
+            padding: 8px 15px;
+        }
+
+        .btn-danger:hover {
+            background: #ee5a52;
+        }
+
+        .btn-add {
+            background: #28a745;
+            color: white;
+            font-size: 0.9rem;
+            padding: 8px 15px;
+        }
+
+        .btn-add:hover {
+            background: #218838;
+        }
+
+        .add-button-container {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .item-list {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .item-header h5 {
+            color: #667eea;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+
+        .loading.active {
+            display: block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .template-selection {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .template-option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .template-option:hover {
+            border-color: #667eea;
+        }
+
+        .template-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .template-selection {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><a href="/">← AI Resume Builder</a></h1>
+        </div>
+    </header>
+
+    <div class="form-container">
+        <h2>Build Your Resume</h2>
+        <div class="success-message" id="successMessage"></div>
+
+        <form id="resumeForm">
+            <!-- Personal Information -->
+            <div class="form-section">
+                <h3>Personal Information</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name *</label>
+                        <input type="text" id="firstName" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name *</label>
+                        <input type="text" id="lastName" name="lastName" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone *</label>
+                        <input type="text" id="phone" name="phone" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" placeholder="City, Country">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Career Objective -->
+            <div class="form-section">
+                <h3>Professional Summary</h3>
+                <div class="form-group">
+                    <label for="careerObjective">Career Objective</label>
+                    <textarea id="careerObjective" name="careerObjective" placeholder="Describe your career goals and objectives..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="professionalSummary">Professional Summary</label>
+                    <textarea id="professionalSummary" name="professionalSummary" placeholder="Brief summary of your professional background..."></textarea>
+                </div>
+            </div>
+
+            <!-- Education -->
+            <div class="form-section">
+                <h3>Education</h3>
+                <div id="educationList" class="item-list"></div>
+                <div class="add-button-container">
+                    <button type="button" class="btn-add" onclick="addEducation()">+ Add Education</button>
+                </div>
+            </div>
+
+            <!-- Skills -->
+            <div class="form-section">
+                <h3>Skills</h3>
+                <div id="skillsList" class="item-list"></div>
+                <div class="add-button-container">
+                    <button type="button" class="btn-add" onclick="addSkill()">+ Add Skill</button>
+                </div>
+            </div>
+
+            <!-- Projects -->
+            <div class="form-section">
+                <h3>Projects</h3>
+                <div id="projectsList" class="item-list"></div>
+                <div class="add-button-container">
+                    <button type="button" class="btn-add" onclick="addProject()">+ Add Project</button>
+                </div>
+            </div>
+
+            <!-- Certifications -->
+            <div class="form-section">
+                <h3>Certifications</h3>
+                <div id="certificationsList" class="item-list"></div>
+                <div class="add-button-container">
+                    <button type="button" class="btn-add" onclick="addCertification()">+ Add Certification</button>
+                </div>
+            </div>
+
+            <!-- Languages -->
+            <div class="form-section">
+                <h3>Languages</h3>
+                <div id="languagesList" class="item-list"></div>
+                <div class="add-button-container">
+                    <button type="button" class="btn-add" onclick="addLanguage()">+ Add Language</button>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            <div class="form-section">
+                <h3>Achievements</h3>
+                <div id="achievementsList" class="item-list"></div>
+                <div class="add-button-container">
+                    <button type="button" class="btn-add" onclick="addAchievement()">+ Add Achievement</button>
+                </div>
+            </div>
+
+            <!-- Template Selection -->
+            <div class="form-section">
+                <h3>Select Template</h3>
+                <div class="template-selection">
+                    <div class="template-option selected" data-template="classic">
+                        <strong>Classic</strong>
+                    </div>
+                    <div class="template-option" data-template="modern">
+                        <strong>Modern</strong>
+                    </div>
+                    <div class="template-option" data-template="creative">
+                        <strong>Creative</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <span>⏳ Processing...</span>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-secondary" onclick="resetForm()">Reset</button>
+                <button type="button" class="btn-primary" onclick="enhanceWithAI()">✨ Enhance with AI</button>
+                <button type="submit" class="btn-primary">📄 Generate Resume</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let resumeId = null;
+        let selectedTemplate = 'classic';
+
+        // Template Selection
+        document.querySelectorAll('.template-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.template-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedTemplate = this.dataset.template;
+            });
+        });
+
+        // Add Education
+        function addEducation() {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Degree *</label>
+                        <input type="text" class="degree" placeholder="e.g., B.Tech, BA, MBA" required>
+                    </div>
+                    <div class="form-group">
+                        <label>University *</label>
+                        <input type="text" class="university" placeholder="University Name" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Field of Study *</label>
+                        <input type="text" class="fieldOfStudy" placeholder="e.g., Computer Science" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Graduation Year *</label>
+                        <input type="number" class="graduationYear" placeholder="YYYY" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>CGPA</label>
+                        <input type="number" class="cgpa" placeholder="e.g., 8.5" step="0.01">
+                    </div>
+                </div>
+                <button type="button" class="btn-danger" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            document.getElementById('educationList').appendChild(item);
+        }
+
+        // Add Skill
+        function addSkill() {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Skill Name *</label>
+                        <input type="text" class="skillName" placeholder="e.g., JavaScript, Python, React" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Proficiency</label>
+                        <select class="proficiency">
+                            <option value="">Select Level</option>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                            <option value="Expert">Expert</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn-danger" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            document.getElementById('skillsList').appendChild(item);
+        }
+
+        // Add Project
+        function addProject() {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Project Name *</label>
+                        <input type="text" class="projectName" placeholder="Project Name" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea class="description" placeholder="Project description..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Technologies</label>
+                        <input type="text" class="technologies" placeholder="e.g., React, Spring Boot, PostgreSQL">
+                    </div>
+                    <div class="form-group">
+                        <label>Project Link</label>
+                        <input type="text" class="projectLink" placeholder="GitHub link">
+                    </div>
+                </div>
+                <button type="button" class="btn-danger" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            document.getElementById('projectsList').appendChild(item);
+        }
+
+        // Add Certification
+        function addCertification() {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Certification Name *</label>
+                        <input type="text" class="certificationName" placeholder="Certification Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Issuer</label>
+                        <input type="text" class="issuer" placeholder="Issuing Organization">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Issue Date</label>
+                        <input type="text" class="issueDate" placeholder="Month Year">
+                    </div>
+                </div>
+                <button type="button" class="btn-danger" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            document.getElementById('certificationsList').appendChild(item);
+        }
+
+        // Add Language
+        function addLanguage() {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Language *</label>
+                        <input type="text" class="languageName" placeholder="Language Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Proficiency</label>
+                        <select class="proficiency">
+                            <option value="">Select Level</option>
+                            <option value="Basic">Basic</option>
+                            <option value="Conversational">Conversational</option>
+                            <option value="Fluent">Fluent</option>
+                            <option value="Native">Native</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn-danger" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            document.getElementById('languagesList').appendChild(item);
+        }
+
+        // Add Achievement
+        function addAchievement() {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+                <div class="form-group">
+                    <label>Achievement Title *</label>
+                    <input type="text" class="achievementTitle" placeholder="Achievement Title" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea class="description" placeholder="Achievement description..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="text" class="date" placeholder="Month Year">
+                    </div>
+                </div>
+                <button type="button" class="btn-danger" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            document.getElementById('achievementsList').appendChild(item);
+        }
+
+        // Gather Form Data
+        function gatherFormData() {
+            const data = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                location: document.getElementById('location').value,
+                careerObjective: document.getElementById('careerObjective').value,
+                professionalSummary: document.getElementById('professionalSummary').value,
+                template: selectedTemplate,
+                educations: [],
+                skills: [],
+                projects: [],
+                certifications: [],
+                languages: [],
+                achievements: []
+            };
+
+            // Gather educations
+            document.querySelectorAll('#educationList .item').forEach(item => {
+                data.educations.push({
+                    degree: item.querySelector('.degree').value,
+                    university: item.querySelector('.university').value,
+                    fieldOfStudy: item.querySelector('.fieldOfStudy').value,
+                    graduationYear: parseInt(item.querySelector('.graduationYear').value),
+                    cgpa: item.querySelector('.cgpa').value ? parseFloat(item.querySelector('.cgpa').value) : null
+                });
+            });
+
+            // Gather skills
+            document.querySelectorAll('#skillsList .item').forEach(item => {
+                data.skills.push({
+                    skillName: item.querySelector('.skillName').value,
+                    proficiency: item.querySelector('.proficiency').value
+                });
+            });
+
+            // Gather projects
+            document.querySelectorAll('#projectsList .item').forEach(item => {
+                data.projects.push({
+                    projectName: item.querySelector('.projectName').value,
+                    description: item.querySelector('.description').value,
+                    technologies: item.querySelector('.technologies').value,
+                    projectLink: item.querySelector('.projectLink').value
+                });
+            });
+
+            // Gather certifications
+            document.querySelectorAll('#certificationsList .item').forEach(item => {
+                data.certifications.push({
+                    certificationName: item.querySelector('.certificationName').value,
+                    issuer: item.querySelector('.issuer').value,
+                    issueDate: item.querySelector('.issueDate').value
+                });
+            });
+
+            // Gather languages
+            document.querySelectorAll('#languagesList .item').forEach(item => {
+                data.languages.push({
+                    languageName: item.querySelector('.languageName').value,
+                    proficiency: item.querySelector('.proficiency').value
+                });
+            });
+
+            // Gather achievements
+            document.querySelectorAll('#achievementsList .item').forEach(item => {
+                data.achievements.push({
+                    achievementTitle: item.querySelector('.achievementTitle').value,
+                    description: item.querySelector('.description').value,
+                    date: item.querySelector('.date').value
+                });
+            });
+
+            return data;
+        }
+
+        // Submit Resume
+        document.getElementById('resumeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = gatherFormData();
+            showLoading(true);
+
+            try {
+                const response = await fetch('/api/resume/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resumeId = result.data.id;
+                    // Download PDF
+                    window.location.href = `/api/resume/${resumeId}/pdf`;
+                    showSuccess('Resume generated successfully! Your PDF is downloading...');
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // Enhance with AI
+        async function enhanceWithAI() {
+            const data = gatherFormData();
+            
+            if (!resumeId) {
+                alert('Please fill in your basic information first.');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                const enhancementData = {
+                    careerObjective: data.careerObjective,
+                    professionalSummary: data.professionalSummary,
+                    skillsDescription: data.skills.map(s => s.skillName).join(', '),
+                    projectDescriptions: data.projects.map(p => `${p.projectName}: ${p.description}`).join('; '),
+                    achievementsDescription: data.achievements.map(a => `${a.achievementTitle}: ${a.description}`).join('; ')
+                };
+
+                const response = await fetch(`/api/resume/${resumeId}/enhance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(enhancementData)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccess('Resume enhanced with AI! Click "Generate Resume" to download the improved version.');
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Reset Form
+        function resetForm() {
+            document.getElementById('resumeForm').reset();
+            document.getElementById('educationList').innerHTML = '';
+            document.getElementById('skillsList').innerHTML = '';
+            document.getElementById('projectsList').innerHTML = '';
+            document.getElementById('certificationsList').innerHTML = '';
+            document.getElementById('languagesList').innerHTML = '';
+            document.getElementById('achievementsList').innerHTML = '';
+        }
+
+        // Show Loading
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+        }
+
+        // Show Success Message
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.classList.add('show');
+            setTimeout(() => {
+                successDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        // Add one education field by default
+        addEducation();
+        addSkill();
+    </script>
+</body>
+</html>
